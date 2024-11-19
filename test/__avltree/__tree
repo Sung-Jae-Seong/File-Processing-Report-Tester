@@ -273,33 +273,28 @@ namespace ft {
 		_LIBCPP_ASSERT(__x != nullptr, "Can't attach null node to a leaf");
 		
 		unsigned __left_height, __right_height;
+
 		while (__x != __end) {
 			__left_height = __height(__x->__left_);
 			__right_height = __height(__x->__right_);
-			if (__left_height + 1 < __right_height || __right_height + 1 < __left_height) {
-				break;
+
+			if (__right_height + 1 < __left_height) {
+				if (__height(__x->__left_->__right_) < __height(__x->__left_->__left_)) { // LL-rotation
+					__tree_right_rotate(__x);
+				} else { // LR-rotation
+					__tree_left_rotate(__x->__left_);
+					__tree_right_rotate(__x);
+				}			
+			} else if (__left_height + 1 < __right_height) {
+				if (__height(__x->__right_->__right_) < __height(__x->__right_->__left_)) { // RL-rotation
+					__tree_right_rotate(__x->__right_);
+					__tree_left_rotate(__x);
+				} else { // RR-rotation
+					__tree_left_rotate(__x);
+				}
 			}
+
 			__x = __x->__parent_unsafe();
-		}
-
-		if (__x == __end) {
-			return;
-		}
-
-		if (__right_height + 1 < __left_height) {
-			if (__height(__x->__left_->__right_) < __height(__x->__left_->__left_)) { // LL-rotation
-				__tree_right_rotate(__x);
-			} else { // LR-rotation
-				__tree_left_rotate(__x->__left_);
-				__tree_right_rotate(__x);
-			}			
-		} else {
-			if (__height(__x->__right_->__right_) < __height(__x->__right_->__left_)) { // RL-rotation
-				__tree_right_rotate(__x->__right_);
-				__tree_left_rotate(__x);
-			} else { // RR-rotation
-				__tree_left_rotate(__x);
-			}
 		}
 	}
 
