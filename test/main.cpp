@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
 			default:
 				std::cerr << "Invalid command: " << command << std::endl;
 				return (1);
-				break;
 		}
 		std::cout << set << std::endl;
 	}

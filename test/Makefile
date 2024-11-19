@@ -2,34 +2,31 @@ SHELL		= /bin/bash
 TARGET		= test_exe
 
 CXX			= clang++
-CXXFLAGS	= -Wall -Wextra -Werror -O3 -I. -x c++ -std=c++20
+CXXFLAGS	= -Wall -Wextra -Werror -O3 -x c++ -std=c++20
 LDFLAGS		= 
 RM			= rm -f
 
 ifdef SANITIZE
-	CXXFLAGS += -g3
+	CXXFLAGS += -g
 	LDFLAGS += -fsanitize=address
 endif
 
 ${TARGET}:
-	@${CXX} ${CXXFLAGS} -o ${TARGET} main.cpp __tree ${LDFLAGS}
+	@${CXX} ${CXXFLAGS} ${INCLUDES} -o ${TARGET} ${SOURCES} ${LDFLAGS}
 
 all: ${TARGET}
 
 __bstree:
-	@cp __bstree/__tree .
-	@${MAKE} all
+	@${MAKE} SOURCES="main.cpp __bstree/__tree" INCLUDES="-I__bstree" ${TARGET}
 
 __avltree:
-	@cp __avltree/__tree .
-	@${MAKE} all
+	@${MAKE} SOURCES="main.cpp __avltree/__tree" INCLUDES="-I__avltree" ${TARGET}
 
 __btree:
-	@cp __btree/__tree .
-	@${MAKE} all
+	@${MAKE} SOURCES="main.cpp __btree/__tree" INCLUDES="-I__btree" ${TARGET}
 
 clean:
-	@${RM} *.o __tree
+	@${RM} *.o
 
 fclean: clean
 	@${RM} ${TARGET}
