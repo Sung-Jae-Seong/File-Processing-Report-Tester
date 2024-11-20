@@ -286,10 +286,10 @@ namespace ft {
 					__tree_right_rotate(__x);
 				}			
 			} else if (__left_height + 1 < __right_height) {
-				if (__height(__x->__right_->__right_) < __height(__x->__right_->__left_)) { // RL-rotation
-					__tree_right_rotate(__x->__right_);
+				if (__height(__x->__right_->__left_) < __height(__x->__right_->__right_)) { // RR-rotation
 					__tree_left_rotate(__x);
-				} else { // RR-rotation
+				} else { // RL-rotation
+					__tree_right_rotate(__x->__right_);
 					__tree_left_rotate(__x);
 				}
 			}
