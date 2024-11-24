@@ -12,11 +12,10 @@ int main(int argc, char **argv) {
 	while (std::cin >> command >> key) {
 		switch ((int)command) {
 			case (int)'i':
-				if (set.find(key) != set.end()) {
+				if (set.insert(key).second == false) {
 					std::cerr << "i " << key << ": The key already exists" << std::endl;
 					continue;
 				}
-				set.insert(key);
 				break;
 			case (int)'d':
 				if (set.find(key) == set.end()) {

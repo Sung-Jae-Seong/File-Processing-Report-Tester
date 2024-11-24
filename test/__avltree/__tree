@@ -279,21 +279,20 @@ namespace ft {
 			__right_height = __height(__x->__right_);
 
 			if (__right_height + 1 < __left_height) {
-				if (__height(__x->__left_->__right_) < __height(__x->__left_->__left_)) { // LL-rotation
+				if (__height(__x->__left_->__right_) <= __height(__x->__left_->__left_)) { // LL-rotation
 					__tree_right_rotate(__x);
 				} else { // LR-rotation
 					__tree_left_rotate(__x->__left_);
 					__tree_right_rotate(__x);
-				}			
+				}
 			} else if (__left_height + 1 < __right_height) {
-				if (__height(__x->__right_->__left_) < __height(__x->__right_->__right_)) { // RR-rotation
+				if (__height(__x->__right_->__left_) <= __height(__x->__right_->__right_)) { // RR-rotation
 					__tree_left_rotate(__x);
 				} else { // RL-rotation
 					__tree_right_rotate(__x->__right_);
 					__tree_left_rotate(__x);
 				}
 			}
-
 			__x = __x->__parent_unsafe();
 		}
 	}
@@ -585,7 +584,8 @@ namespace ft {
 			
 			os << '<';
 			os << static_cast<__tree_node*>(__x->__left_);
-			os << ' ' << __x->__value_ << ' ';
+			//os << ' ' << __x->__value_ << ' ';
+			os << ' ' << __x->__value_ << '(' << ((int)__height(__x->__left_) - (int)__height(__x->__right_)) << ')' << ' ';
 			os << static_cast<__tree_node*>(__x->__right_);
 			os << '>';
 			return os;
@@ -597,7 +597,7 @@ namespace ft {
 	class __tree_node_destructor
 	{
 		typedef _Allocator                                      allocator_type;
-		typedef std::allocator_traits<allocator_type>                __alloc_traits;
+		typedef std::allocator_traits<allocator_type>           __alloc_traits;
 
 	public:
 		typedef typename __alloc_traits::pointer                pointer;
