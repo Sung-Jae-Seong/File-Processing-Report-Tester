@@ -584,8 +584,7 @@ namespace ft {
 			
 			os << '<';
 			os << static_cast<__tree_node*>(__x->__left_);
-			//os << ' ' << __x->__value_ << ' ';
-			os << ' ' << __x->__value_ << '(' << ((int)__height(__x->__left_) - (int)__height(__x->__right_)) << ')' << ' ';
+			os << ' ' << __x->__value_ << ' ';
 			os << static_cast<__tree_node*>(__x->__right_);
 			os << '>';
 			return os;
