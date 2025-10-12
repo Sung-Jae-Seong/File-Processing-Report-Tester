@@ -94,7 +94,7 @@ https://github.com/KMU-File-Processing/File-Processing-Report-Tester.git
 ### GitHub Actions (권장)
 
 GitHub Actions를 사용하여 프로젝트를 테스트할 수 있습니다.  
-아래의 템플릿 링크를 통해 저장소를 생성하세요.
+아래의 템플릿 링크를 주소창에 입력하여 프로젝트를 생성하세요.
 
 ```
 https://github.com/KMU-File-Processing/File-Processing-Report-Tester/generate
@@ -107,7 +107,8 @@ https://github.com/KMU-File-Processing/File-Processing-Report-Tester/generate
 ## 설정 (Configuration)
 
 스크립트를 처음 실행하면 `my_config.sh` 파일이 자동으로 생성됩니다.  
-이 파일을 열어, 본인의 프로젝트 경로를 수정해주면 됩니다.
+이 파일을 열어, 테스트할 코드가 있는 디렉토리 경로를 수정해주면 됩니다.
+Github Actions에서 실행할 경우 이 단계는 건너뛰어도 됩니다.
 
 </br>
 
@@ -171,6 +172,62 @@ gh workflow run main.yml -f project="project_to_test"
 
 </br>
 </br>
+
+<img src="./assets/github_actions_result_0.png" width="100%"/>
+
+</br>
+
+Github Actions 탭에 들어가면 위 사진과 같이 완료된 work flow들이 나타납니다.
+각 work flow들을 클릭하여 채점 결과를 확인할 수 있습니다.
+
+</br>
+</br>
+
+<img src="./assets/github_actions_result_1.png" width="100%"/>
+
+</br>
+</br>
+
+확인하고 싶은 테스트 결과를 클릭하면 위 사진과 같은 창이 나옵니다.
+위 사진에서 강조된 test라고 적혀있는 버튼을 누르면 
+
+</br>
+</br>
+
+<img src="./assets/github_actions_result_2.png" width="100%"/>
+
+</br>
+
+테스트 채점 결과를 확인할 수 있습니다.
+
+deepthought을 다운로드하여 더 자세한 결과를 확인할 수 있습니다.
+
+</br>
+</br>
+
+<img src="./assets/deepthought_fail.png" width="100%"/>
+
+</br>
+
+deepthought 파일의 예시 결과입니다. 제출한 코드가 잘못된 출력을 했을 경우 정답 출력과 비교하여 보여줍니다.
+'-' 뒤에 출력되는 줄은 제출한 코드가 출력한 틀린 출력입니다.
+'+' 뒤에 출력되는 줄은 정답에 해당되는 출력입니다.
+밑에 강조된 부분은 random test case에서 메모리 누수가 발견되었음을 알려줍니다.
+
+이런 에러 메시지들을 잘 확인하시고 코드를 수정하시면 됩니다.
+
+</br>
+</br>
+
+<img src="./assets/deepthought_success.png" width="100%"/>
+
+</br>
+
+위 사진은 테스트에 통과되었을 때 출력되는 메시지를 보여줍니다.
+
+
+</br>
+</br>
 </br>
 </br>
 
@@ -187,6 +244,6 @@ gh workflow run main.yml -f project="project_to_test"
 # 문의 (Contact)
 
 문의사항이 있으시면 아래 메일로 연락해주세요.  
-<mailto:younganswer@kookmin.ac.kr>
+<mailto:jch618@kookmin.ac.kr>
 
-여러분의 기여를 언제나 환영합니다! 🎉
+여러분의 기여는 언제나 환영합니다! 🎉
