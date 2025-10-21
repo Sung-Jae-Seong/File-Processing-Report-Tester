@@ -1,281 +1,306 @@
 #include <iostream>
 #include <stack>
 
-using namespace std;
+template <class _Tp> class Node;
+template <class _Tp> class BST;
 
-// Node
+/*
+* 아래는 반드시 사용해야하는 Node 클래스입니다.
+* height, size를 제외한 멤버 변수는 추가, 삭제 및 변경이 불가능합니다.
+*/
+template <class _Tp>
 class Node {
-public:
-	int key;
-	Node* left;
-	Node* right;
-	int height;
-	Node(int key=0, Node* left=nullptr, Node* right=nullptr, int height=0) \
-		: key(key), left(left), right(right), height(height) {}
+	public: // Member types
+		typedef _Tp					__key_type;
+		typedef Node<__key_type>*	__node_pointer_type;
+	
+	public: // Member variables
+		__key_type			__key_;
+		__node_pointer_type	__left_;
+		__node_pointer_type	__right_;
+	
+	public: // Constructor
+		Node(): __key_(__key_type()), __left_(nullptr), __right_(nullptr) {}
+		Node(const __key_type& key): __key_(key), __left_(nullptr), __right_(nullptr) {}
+
+	/*
+	* 아래는 inorder traversal을 대체할 수 있는 operator<< 입니다.
+	* 반드시 아래의 함수를 사용해야할 필요는 없습니다.
+	*/
 };
 
-// Node 생성하는 함수
-Node* getNode() {
-	return new Node();
+/*
+* 아래 함수들의 설계 방식은 Tree와 Node의 구동부를 구현하기 위해 추천드리는 설계 방식입니다.
+* 반드시 아래의 설계 방식을 따라야 하는 것은 아닙니다.
+*/
+
+template <class _NodePtr>
+unsigned __height(_NodePtr __x) {
+	if(__x == nullptr) return 0;
+	return std::max(__height(__x->__left_), __height(__x->__right_))+1;
+	// write your own code here
 }
 
+template <class _NodePtr>
+unsigned __size(_NodePtr __x) {
+	if(__x == nullptr) return 0;
+	return __size(__x->__left_) + __size(__x->__right_) + 1;
+	// write your own code here
+}
+
+/*
+* 아래 함수는 minNode와 동일한 역할을 하는 함수입니다.
+* 매개 변수 타입과 반환 타입을 참조 타입으로 수정하셔도 무방합니다.
+*/
+template <class _NodePtr>
+_NodePtr __tree_min(_NodePtr __x, _NodePtr parent = nullptr) {
+	if(__x->__left_==nullptr) return parent;
+	return __tree_min(__x->__left_, __x);
+	// write your own code here
+}
+
+/*
+* 아래 함수는 maxNode와 동일한 역할을 하는 함수입니다.
+* 매개 변수 타입과 반환 타입을 참조 타입으로 수정하셔도 무방합니다.
+*/
+template <class _NodePtr>
+_NodePtr __tree_max(_NodePtr __x, _NodePtr parent = nullptr) {
+	if(__x->__right_==nullptr) return parent;
+	return __tree_max(__x->__right_, __x);
+	// write your own code here
+}
+
+/*
+* PDF에 명시되어있는 출력 형식에 유의하세요.
+* ❗️잘못된 출력 형식은 0점 처리됩니다.❗️
+*/
+template <class _NodePtr>
+void __inorder(_NodePtr __x) {
+	if(__x == nullptr) return;
+	std::cout << '<';
+	__inorder(__x->__left_);
+	std::cout << " " << __x->__key_ << " ";
+	__inorder(__x->__right_);
+	std::cout << '>';
+	// write your own code here
+}
+
+/*
+* 아래 함수는 삽입된 노드의 위치와 삽입 여부를 반환합니다.
+* 예시) 이미 같은 키 값이 존재하는 경우: return std::pair<_NodePtr, bool>(__p, false);
+*/
+template <class _NodePtr, class _Tp>
+std::pair<_NodePtr, bool> __insertBST(_NodePtr& __root, const _Tp& key) { // ???
+	if (__root == nullptr){
+		__root = new Node<_Tp>(key);
+		return std::pair<_NodePtr, bool>(__root, true);
+	}
+	else if(__root->__key_ == key) return std::pair<_NodePtr, bool>(nullptr, false);
+	else if(__root->__key_ > key){
+		if(__root->__left_ == nullptr){
+			__root->__left_ = new Node<_Tp>(key);
+			return std::pair<_NodePtr, bool>(__root->__left_, true);
+		}
+		return __insertBST(__root->__left_, key);
+	}
+	else if(__root->__key_ < key){
+		if(__root->__right_ == nullptr){
+			__root->__right_ = new Node<_Tp>(key);
+			return std::pair<_NodePtr, bool>(__root->__right_, true);
+		}
+		return __insertBST(__root->__right_, key);
+	}
+	// write your own code here
+}
+
+
+template <class _NodePtr>
+_NodePtr __erase_left_subtree(_NodePtr& root){
+	_NodePtr max_node_parent = __tree_max(root->__left_); //왼쪽 서브트리의 최대 노드의 부모를 찾음
+	if(max_node_parent == nullptr){ // 부모가 nullptr이면 root->left가 최대라는 뜻 
+		_NodePtr max_node = root->__left_; // 최대 노드
+		root->__key_ = max_node->__key_; // 최대 노드의 키 복사
+		root->__left_ = max_node->__left_; // 최대 노드의 right은 존재하지 않으므로 left를 복사
+		return max_node;
+	}
+	else {
+		_NodePtr max_node = max_node_parent->__right_; // 최대 노드는 부모 노드의 오른쪽 값
+		root->__key_ = max_node->__key_; // 최대값을 root에 복사하기
+		max_node_parent->__right_ = max_node->__left_; // 최대 노드의 right는 존재하지 않으므로 left를 복사
+		return max_node; // 해당 노드 삭제
+	}
+}
+
+template <class _NodePtr>
+_NodePtr __erase_right_subtree(_NodePtr& root) {
+    _NodePtr min_node_parent = __tree_min(root->__right_); // 오른쪽 서브트리의 최소 노드의 부모를 찾음
+    if (min_node_parent == nullptr) { // 부모가 nullptr이면 root->right가 최소 노드라는 뜻
+        _NodePtr min_node = root->__right_; // 최소 노드
+        root->__key_ = min_node->__key_; // 최소 노드의 키 복사
+        root->__right_ = min_node->__right_; // 최소 노드의 left는 존재하지 않으므로 right를 복사
+        return min_node; // 해당 노드 삭제
+    } 
+    else {
+        _NodePtr min_node = min_node_parent->__left_; // 최소 노드는 부모 노드의 왼쪽 값
+        root->__key_ = min_node->__key_; // 최소값을 root에 복사
+        min_node_parent->__left_ = min_node->__right_; // 최소 노드의 left는 존재하지 않으므로 right를 복사
+        return min_node; // 해당 노드 삭제
+    }
+}
+
+
+/*
+* Root node가 삭제되는 경우를 고려하여 매개 변수 "__root" 를 참조 타입으로 받도록 설계하였습니다.
+* "__root = 대체될 노드"로 BST class의 멤버 변수 __root_ 값을 변경할 수 있습니다.
+* 현재 로직에서 존재하지 않는 key를 erase하려고 할 때, nullptr을 반환해야 정상 작동하도록 설계되어 있습니다.
+*/
+template <class _NodePtr, class _Tp>
+_NodePtr __eraseBST(_NodePtr& __root, const _Tp& key) {
+	if(__root==nullptr) return nullptr;
+	else if(__root->__key_ == key) {
+		if(__root->__left_==nullptr&&__root->__right_==nullptr){
+			_NodePtr temp = __root;
+        	__root = nullptr;
+        	return temp;
+		}
+		else if(__root->__left_==nullptr) return __erase_right_subtree(__root);
+		else if(__root->__right_==nullptr) return __erase_left_subtree(__root);
+		// degree가 2인 경우
+		unsigned h_left = __height(__root->__left_);
+		unsigned h_right = __height(__root->__right_);
+		if(h_left > h_right) return __erase_left_subtree(__root);
+		else if(h_left < h_right) return __erase_right_subtree(__root);
+		// 양쪽 h가 같은 경우
+		unsigned s_left = __size(__root->__left_);
+		unsigned s_right = __size(__root->__right_);
+		if(s_left >= s_right) return __erase_left_subtree(__root);
+		else if(s_left < s_right) return __erase_right_subtree(__root);
+	}
+	else if (__root->__key_ > key){
+		if(__root->__left_ == nullptr) return nullptr;
+		return __eraseBST(__root->__left_, key);
+	}
+	else if (__root->__key_ < key){
+		if(__root->__right_ == nullptr) return nullptr;
+		return __eraseBST(__root->__right_, key);
+	}
+	// write your own code here
+}
+
+// Dangling pointer를 방지하기 위해 __x를 참조 타입으로 받도록 설계하였습니다.
+template <class _NodePtr>
+void __clear(_NodePtr& __x) {
+	if(__x == nullptr) return;
+	__clear(__x->__left_);
+	__clear(__x->__right_);
+	delete __x;
+	__x = nullptr;
+	return ;
+	// write your own code here
+}
+
+// 아래는 반드시 사용해야하는 BST 클래스입니다.
+template <class _Tp>
 class BST {
-public:
-	Node* root_;
-	BST(Node* root_ = nullptr) : root_(root_) {}
+	public: // Member types
+		typedef _Tp						key_type;
+		typedef std::size_t				size_type;
+		typedef Node<key_type>*			pointer;
+		typedef const Node<key_type>*	const_pointer;
+	
+	private: // Member variables
+		pointer	__root_;
+	
+	public: // Constructor
+		BST(): __root_(nullptr) {}
+	
+	/*
+	* 아래는 반드시 구현해야하는 부분입니다.
+	* 위의 추천드리는 설계 방식을 이용하여 구현하는 것을 추천합니다.
+	* 추전드리는 설계 방식을 이용하지 않고 새로 구현하셔도 무방합니다.
+	*/
 
-	// 트리의 높이
-	int height(BST T) {
-		return T.root_->height;
-	}
-
-	int size(Node* T) {
-		if (T == nullptr) { return 0; }
-		return size(T->left) + 1 + size(T->right);
-	}
-	// 트리의 노드의 개수
-	int size(BST T) {
-		return size(T.root_);
-	}
-
-	Node* minNode(Node* T) {
-		Node* p = T;
-		while (p->left != nullptr) {
-			p = p->left;
-		}
-		return p;
-	}
-	// 트리 중 키 값이 가장 작은 노드
-	Node* minNode(BST T) {
-		return minNode(T.root_);
-	}
-
-	Node* maxNode(Node* T) {
-		Node* p = T;
-		while (p->right != nullptr) {
-			p = p->right;
-		}
-		return p;
-	}
-	// 트리 중 키 값이 가장 큰 노드
-	Node* maxNode(BST T) {
-		return maxNode(T.root_);
-	}
-
-	bool insertBST(BST& T, int newKey) {
-		Node* q = nullptr;	// p의 부모노드
-		Node* p = T.root_;	// position
-		stack<Node*> stack;
-
-		while (p != nullptr) {	// 현재 노드가 None이 아니라면
-			if (newKey == p->key) { return false; } // already exists
-			q = p; // q가 position을 가리킴, p는 다음 노드로 이동할 거라 이동하기 전에 현 위치를 부모노드로 가리켜야하기 때문
-			stack.push(q);	// q를 저장하는 이유는 p는 어짜피 leaf node일거라 height=0이기 때문, height 값이 바뀌는건 q만 해당
-			// 현재 노드의 key 값에 따라서 p가 왼쪽, 오른쪽으로 감
-			if (newKey < p->key) { p = p->left; }
-			else { p = p->right; }
+	public: // Capacity
+		size_type height() const {
+			// use __height or write your own code here
+			return __height(__root_);
 		}
 
-		// 현재 노드가 None이므로 노드 하나 새로 만들어서 넣어야한다
-		Node* newNode = getNode();
-		// newNode.left = nullptr
-		// newNode.right = nullptr
-		newNode->key = newKey;
-
-
-		if (T.root_ == nullptr) { T.root_ = newNode; }	// 아무 것도 없을때 삽입했다면
-		// while 문 빠져나왔을 때의 상황: 삽입 위치는 p 위치, p 위치 접근하려면 부모노드인 q를 통해 접근해야 함
-		else if (newKey < q->key) { q->left = newNode; }
-		else { q->right = newNode; }
-
-		// 모든 노드 height 계산
-		// stack에 저장되어 있는건 삽입된 노드 p 위치, leaf node의 부모 노드들
-		while (!stack.empty()) {
-			q = stack.top();	// 가장 최근이 삽입된 노드 위치로부터 가장 가까운 부모노드
-			stack.pop();
-			Node* left = q->left;
-			Node* right = q->right;
-			if (left != nullptr && right != nullptr) {	// 자식 노드가 모두 존재한다면
-				// height가 큰 쪽의 값에 1 더한거
-				if (height(BST(left)) < height(BST(right))) { q->height = 1 + height(BST(right)); }
-				else { q->height = 1 + height(BST(left)); }
-			}
-			else if (q->left == nullptr) { q->height = 1 + height(BST(q->right)); }	// 오른쪽 자식 노드만 있다면
-			else { q->height = 1 + height(BST(q->left)); }	// 왼쪽 자식 노드만 있다면, 자식 노드가 없는 상황은 고려 할 필요X
+		size_type size() const {
+			// use __size or write your own code here
+			return __size(__root_);
+		}
+	
+	public: // Lookup
+		void inorder() const {
+			// use __inorder or write your own code here
+			__inorder(__root_);
+			std::cout << std::endl;
 		}
 		
-		// 키가 정상적으로 삽입되면 true 반환
-		return true;
-	}
-
-	Node* eraseBST(BST &T, int deleteKey) {
-		Node* q = nullptr;	// q의 부모노드
-		Node* p = T.root_;	// position
-		stack<Node*> stack;
-		
-
-		while (p != nullptr && deleteKey != p->key) {	// 현재노드가 None이 아니고 삭제할 노드가 현재 노드가 아닐때 까지
-			q = p;	// p는 다음 노드로 움직이므로 q에 현재 위치를 저장
-			stack.push(q);
-
-			// 삭제할 노드를 찾아 p가 이동
-			if (deleteKey < p->key) { p = p->left; }
-			else { p = p->right; }
-		}
-		
-		if (p == nullptr) { return nullptr; } // was not found
-		
-
-		// case if degree of p == 2
-		if (p->left != nullptr && p->right != nullptr) {
-			stack.push(p);
-			Node* tempNode = p;
-
-			if (height(BST(p->left)) < height(BST(p->right))) {
-				// p->right의 minNode로 이동
-				Node* r = minNode(BST(p->right));
-				p = p->right;
-				while (p != r) {
-					stack.push(p);
-					p = p->left;//
-				}
-			}
-			else if (height(BST(p->left)) > height(BST(p->right))) {
-				// p->left의 maxNode로 이동
-				Node* r = maxNode(p->left);
-				p = p->left;
-				while (p != r) {
-					stack.push(p);
-					p = p->right;
-				}
-			}
-			else {	// 왼쪽 오른쪽 모두 높이가 같다면
-				// 노드의 개수가 더 많은 쪽으로 이동
-				if (size(BST(p->left)) < size(BST(p->right))) {
-					// p->right의 minNode로 이동
-					Node* r = minNode(BST(p->right));
-					p = p->right;
-					while (p != r) {
-						stack.push(p);
-						p = p->left;
-					}
-				}
-				else {
-					// p->left의 maxNode로 이동
-					Node* r = maxNode(p->left);
-					p = p->left;
-					while (p != r) {
-						stack.push(p);
-						p = p->right;
-					}
-				}
-			}
-
-			tempNode->key = p->key;
-			q = stack.top();
+	public: // Modifier
+		std::pair<const_pointer, bool> insert(const key_type& key) {
+			// use __insertBST or write your own code here
+			return __insertBST(__root_, key);
 		}
 
-		// now degree of p is 0 or 1
-		// delete p from T
-		if (p->left == nullptr && p->right == nullptr) { // case of degree 0
-			if (q == nullptr) { T.root_ = nullptr; } // case of root
-			else if (q->left == p) { q->left = nullptr; }
-			else { q->right = nullptr; }
-		}
-		else { // case of degree 1
-			if (p->left != nullptr) {
-				if (q == nullptr) { T.root_ = T.root_->left; } // case of root
-				else if (q->left == p) { q->left = p->left; }
-				else { q->right = p->left; }
-			}
-			else {
-				if (q == nullptr) { T.root_ = T.root_->right; } // case of root
-				else if (q->left == p) { q->left = p->right; }
-				else { q->right = p->right; }
-			}
+		const_pointer erase(const key_type& key) {
+			// use __eraseBST or write your own code here
+			pointer __r = __eraseBST(__root_, key);
+			if (__r == nullptr) return nullptr;
+			if (__r == __root_) __root_ = nullptr;
+			// Client still needs to destruct/deallocate it
+			// Or memory leak will occur
+			delete __r;
+			return __r;
 		}
 
-		delete p;
-
-		while (!stack.empty()) {
-			q = stack.top();
-			stack.pop();
-			Node* left = q->left;
-			Node* right = q->right;
-			if (left != nullptr && right != nullptr) {	// 자식 노드가 모두 존재한다면
-				// height가 큰 쪽의 값에 1 더한거
-				if (height(BST(left)) < height(BST(right))) { q->height = 1 + height(BST(right)); }
-				else { q->height = 1 + height(BST(left)); }
-			}
-			// 자식 노드가 원래 있었는데 삭제 연산 후 자식 노드가 모두 없어진 경우 존재
-			else if (left == nullptr && right == nullptr) { q->height = 0; }
-			// 자식노드가 한 쪽에만 존재할 때
-			else if (q->left == nullptr) { q->height = 1 + height(BST(q->right)); }
-			else { q->height = 1 + height(BST(q->left)); }
-
+		void clear() {
+			// use __clear or write your own code here
+			__clear(__root_);
 		}
-
-		// 키가 정상적으로 삭제되면 삭제한 노드의 부모 노드 반환
-		// Root 노드 삭제를 했다면 q == nullptr 이므로 예외처리
-		return q;
-	}
-
-	Node* inOrder(Node* T) {
-		if (T != nullptr) {
-			cout << '<';
-			if (T->left != nullptr) { inOrder(T->left); }
-			cout << ' ';
-			cout << T->key;
-			cout << ' ';
-			if (T->right != nullptr) { inOrder(T->right); }
-			cout << '>';
-		}
-
-		return T;
-	}
-
-	void inOrder(BST T) {
-		inOrder(T.root_);
-	}
-
-	Node* clear(Node* &T) {
-		if (T == nullptr) { return nullptr; }
-		clear(T->left);
-		clear(T->right);
-		delete T;
-		return nullptr;
-	}
-
-	void clear(BST &T) {
-		clear(T.root_);
-	}
+	
+	/*
+	* 아래는 inorder traversal을 대체할 수 있는 operator<< 입니다.
+	* 반드시 아래의 함수를 사용해야할 필요는 없습니다.
+	*/
 };
 
-int main() {
-	char command;
-	int key;
-	BST root;
+/*
+* 아래는 추천드리는 main 함수의 예시입니다.
+* 반드시 아래의 main 함수를 사용해야할 필요는 없습니다.
+* ❗️새로 구현하실 경우, 출력 형식에 주의하세요.❗️
+*/
+int main(int argc, char **argv) {
+	BST<int>	tree;
+	char		command;
+	int			key;
 
-	while (cin >> command >> key) {
-		if (command == 'i') {
-			if (root.insertBST(root, key) == false) { cout << "i " << key << ": The key already exists\n"; }
-			else { root.inOrder(root); cout << '\n'; }
-		}
-		else {
-			// Root 노드를 지운다고 한다면
-			// 이때는 정상적으로 eraseBST() 호출되어도 nullptr 반환되므로 예외처리 해야한다
-			if (root.root_ != nullptr && key == root.root_->key) {
-				root.eraseBST(root, key);
-				root.inOrder(root); cout << '\n';
-			}
-			// 그게 아닌데 nullptr이 반환됐다면 not exist
-			else if (root.eraseBST(root, key) == nullptr) {
-				cout << "d " << key << ": The key does not exist\n";
-			}
-			else { root.inOrder(root); cout << '\n'; }
+	while (std::cin >> command >> key) {
+		switch ((int)command) {
+			case (int)'i':
+				if (tree.insert(key).second == false) {
+					std::cerr << "i " << key << ": The key already exists" << std::endl;
+					continue;
+				}
+				tree.inorder();
+				break;
+			case (int)'d':
+				if (tree.erase(key) == nullptr) {
+					std::cerr << "d " << key << ": The key does not exist" << std::endl;
+					continue;
+				}
+				tree.inorder();
+				break;
+			default:
+				std::cerr << "Invalid command: " << command << std::endl;
+				return (1);
+				break;
 		}
 	}
 
-	root.clear(root);
-	return 0;
+	// 프로그램 종료 전, 메모리 누수가 발생하지 않도록 할당받은 메모리를 반드시 해제해야 합니다.
+	tree.clear();
+
+	return (0);
 }
