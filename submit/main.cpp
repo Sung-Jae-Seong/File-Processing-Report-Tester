@@ -137,7 +137,7 @@ public:
 				p = p->right;
 				while (p != r) {
 					stack.push(p);
-					p = p->left;
+					p = p->left;//
 				}
 			}
 			else if (height(BST(p->left)) > height(BST(p->right))) {
