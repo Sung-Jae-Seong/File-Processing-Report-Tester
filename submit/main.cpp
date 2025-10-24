@@ -223,13 +223,13 @@ _NodePtr __eraseBST(_NodePtr& __root, const _Tp& key) {
 	else{ // p에 왼쪽 오른쪽 서브트리가 있을 때 (degree가 2일 때)
 		_NodePtr r;
 		int flag; //0이면 왼쪽 1이면 오른쪽
-		unsigned h_left = __height(__root->__left_);
-		unsigned h_right = __height(__root->__right_);
+		unsigned h_left = __height(p->__left_);
+		unsigned h_right = __height(p->__right_);
 		if(h_left > h_right) { r = __tree_max(p->__left_); flag = 0;}
 		else if (h_left < h_right) { r = __tree_min(p->__right_); flag = 1;}
 		else{
-			unsigned s_left = __size(__root->__left_);
-			unsigned s_right = __size(__root->__right_);
+			unsigned s_left = __size(p->__left_);
+			unsigned s_right = __size(p->__right_);
 			if(s_left >= s_right) {r = __tree_max(p->__left_); flag = 0;}
 			else if(s_left < s_right) {r = __tree_min(p->__right_); flag = 1;}
 		}
