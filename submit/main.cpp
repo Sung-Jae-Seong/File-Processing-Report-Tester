@@ -1,3 +1,17 @@
+/*
+* File Processing Report 2024 - Binary Search Tree skeleton code in C/C++
+*
+* 본 Skeleton code는 구현에 도움을 주기 위해 작성된 코드입니다.
+* ❗️본 Skeleton code는 과제의 요구 조건을 완전히 충족시키지 않을 수 있습니다.❗️
+* ❗️최종 점수 산정은 과제 PDF에 명시된 요구 사항을 기준으로 이루어집니다.❗️
+*
+* 미리 말씀드리면, skeleton code가 다소 어려울 수 있습니다.
+* C++ 스러운 코딩 스타일과 코드 설계 방식에 관한 고찰이 담겨있으니, 충분한 시간을 들여 분석해보시기 바랍니다.
+* 또, 재사용성을 고려하여 설계된 코드인 만큼 처음에는 이해하기 어려울 수 있습니다.
+* 이후 AVL-Tree, B-Tree 과제에서도 그대로 사용되니, 이번 BST에서 잘 이해하고 넘어가시길 바랍니다.
+*
+*/
+
 #include <iostream>
 #include <stack>
 
@@ -27,6 +41,11 @@ class Node {
 	* 아래는 inorder traversal을 대체할 수 있는 operator<< 입니다.
 	* 반드시 아래의 함수를 사용해야할 필요는 없습니다.
 	*/
+	friend std::ostream& operator<<(std::ostream& os, const __node_pointer_type& np) {
+		__inorder(np);
+		return os;
+		// write your own code here
+	}
 };
 
 /*
@@ -53,20 +72,19 @@ unsigned __size(_NodePtr __x) {
 * 매개 변수 타입과 반환 타입을 참조 타입으로 수정하셔도 무방합니다.
 */
 template <class _NodePtr>
-_NodePtr __tree_min(_NodePtr __x, _NodePtr parent = nullptr) {
-	if(__x->__left_==nullptr) return parent;
-	return __tree_min(__x->__left_, __x);
+_NodePtr __tree_min(_NodePtr __x) {
+	if(__x->__left_==nullptr) return __x;
+	return __tree_min(__x->__left_);
 	// write your own code here
 }
-
 /*
 * 아래 함수는 maxNode와 동일한 역할을 하는 함수입니다.
 * 매개 변수 타입과 반환 타입을 참조 타입으로 수정하셔도 무방합니다.
 */
 template <class _NodePtr>
-_NodePtr __tree_max(_NodePtr __x, _NodePtr parent = nullptr) {
-	if(__x->__right_==nullptr) return parent;
-	return __tree_max(__x->__right_, __x);
+_NodePtr __tree_max(_NodePtr __x) {
+	if(__x->__right_==nullptr) return __x;
+	return __tree_max(__x->__right_);
 	// write your own code here
 }
 
@@ -85,12 +103,32 @@ void __inorder(_NodePtr __x) {
 	// write your own code here
 }
 
+template <class _NodePtr, class _Tp>
+_NodePtr searchBST(_NodePtr __x, const _Tp& key) {
+	if (__x == nullptr) return nullptr;
+	if (__x->__key_ == key) return __x;
+	return (key < __x->__key_) ? searchBST(__x->__left_, key):searchBST(__x->__right_, key);
+}
+
+template <class _NodePtr, class _Tp>
+_NodePtr searchParent(_NodePtr __x, const _Tp& key) {
+	_NodePtr q = nullptr;
+	_NodePtr p = __x;
+	while(p != nullptr){
+		if(key == p->__key_) return q;
+		q = p;
+		if(key < p->__key_) p=p->__left_;
+		else p=p->__right_;
+	}
+	return nullptr;
+}
+
 /*
 * 아래 함수는 삽입된 노드의 위치와 삽입 여부를 반환합니다.
 * 예시) 이미 같은 키 값이 존재하는 경우: return std::pair<_NodePtr, bool>(__p, false);
 */
 template <class _NodePtr, class _Tp>
-std::pair<_NodePtr, bool> __insertBST(_NodePtr& __root, const _Tp& key) { // ???
+std::pair<_NodePtr, bool> __insertBST(_NodePtr& __root, const _Tp& key) {
 	if (__root == nullptr){
 		__root = new Node<_Tp>(key);
 		return std::pair<_NodePtr, bool>(__root, true);
@@ -113,42 +151,6 @@ std::pair<_NodePtr, bool> __insertBST(_NodePtr& __root, const _Tp& key) { // ???
 	// write your own code here
 }
 
-
-template <class _NodePtr>
-_NodePtr __erase_left_subtree(_NodePtr& root){
-	_NodePtr max_node_parent = __tree_max(root->__left_); //왼쪽 서브트리의 최대 노드의 부모를 찾음
-	if(max_node_parent == nullptr){ // 부모가 nullptr이면 root->left가 최대라는 뜻 
-		_NodePtr max_node = root->__left_; // 최대 노드
-		root->__key_ = max_node->__key_; // 최대 노드의 키 복사
-		root->__left_ = max_node->__left_; // 최대 노드의 right은 존재하지 않으므로 left를 복사
-		return max_node;
-	}
-	else {
-		_NodePtr max_node = max_node_parent->__right_; // 최대 노드는 부모 노드의 오른쪽 값
-		root->__key_ = max_node->__key_; // 최대값을 root에 복사하기
-		max_node_parent->__right_ = max_node->__left_; // 최대 노드의 right는 존재하지 않으므로 left를 복사
-		return max_node; // 해당 노드 삭제
-	}
-}
-
-template <class _NodePtr>
-_NodePtr __erase_right_subtree(_NodePtr& root) {
-    _NodePtr min_node_parent = __tree_min(root->__right_); // 오른쪽 서브트리의 최소 노드의 부모를 찾음
-    if (min_node_parent == nullptr) { // 부모가 nullptr이면 root->right가 최소 노드라는 뜻
-        _NodePtr min_node = root->__right_; // 최소 노드
-        root->__key_ = min_node->__key_; // 최소 노드의 키 복사
-        root->__right_ = min_node->__right_; // 최소 노드의 left는 존재하지 않으므로 right를 복사
-        return min_node; // 해당 노드 삭제
-    } 
-    else {
-        _NodePtr min_node = min_node_parent->__left_; // 최소 노드는 부모 노드의 왼쪽 값
-        root->__key_ = min_node->__key_; // 최소값을 root에 복사
-        min_node_parent->__left_ = min_node->__right_; // 최소 노드의 left는 존재하지 않으므로 right를 복사
-        return min_node; // 해당 노드 삭제
-    }
-}
-
-
 /*
 * Root node가 삭제되는 경우를 고려하여 매개 변수 "__root" 를 참조 타입으로 받도록 설계하였습니다.
 * "__root = 대체될 노드"로 BST class의 멤버 변수 __root_ 값을 변경할 수 있습니다.
@@ -156,46 +158,96 @@ _NodePtr __erase_right_subtree(_NodePtr& root) {
 */
 template <class _NodePtr, class _Tp>
 _NodePtr __eraseBST(_NodePtr& __root, const _Tp& key) {
-	if(__root==nullptr) return nullptr;
-	else if(__root->__key_ == key) {
-		if(__root->__left_==nullptr&&__root->__right_==nullptr){
-			_NodePtr temp = __root;
-        	__root = nullptr;
-        	return temp;
+	_NodePtr p = searchBST(__root, key);
+	_NodePtr q = searchParent(__root, key);
+	if (p==nullptr) return nullptr;
+	else if (q==nullptr){ // 삭제하려는게 루트노드일 때
+		if (p->__left_ == nullptr && p->__right_ == nullptr) {
+			__root = nullptr;
+			return p;
+		} else if (p->__left_ == nullptr) {
+			__root = p->__right_;
+			return p;
+		} else if (p->__right_ == nullptr) {
+			__root = p->__left_;
+			return p;
+		} else {
+			_NodePtr r;
+			int flag;
+			unsigned h_left = __height(p->__left_);
+			unsigned h_right = __height(p->__right_);
+			if (h_left > h_right) { r = __tree_max(p->__left_); flag = 0; }
+			else if (h_left < h_right) { r = __tree_min(p->__right_); flag = 1; }
+			else {
+				unsigned s_left = __size(p->__left_);
+				unsigned s_right = __size(p->__right_);
+				if (s_left >= s_right) { r = __tree_max(p->__left_); flag = 0; }
+				else { r = __tree_min(p->__right_); flag = 1; }
+			}
+			p->__key_ = r->__key_;
+			if (flag) return __eraseBST(p->__right_, r->__key_);
+			else return __eraseBST(p->__left_, r->__key_);
 		}
-		else if(__root->__left_==nullptr) return __erase_right_subtree(__root);
-		else if(__root->__right_==nullptr) return __erase_left_subtree(__root);
-		// degree가 2인 경우
+	}
+	else if(p->__left_==nullptr&&p->__right_==nullptr){ // p에 자식 노드가 없을 때
+		if(q->__left_==p){
+			q->__left_=nullptr;
+			return p;
+		}
+		else{
+			q->__right_=nullptr;
+			return p;
+		}
+	}
+	else if(p->__left_==nullptr){ // p에 오른쪽 서브트리만 있을 때
+		if(q->__left_==p){
+			q->__left_=p->__right_;
+			return p;
+		}
+		else{
+			q->__right_=p->__right_;
+			return p;
+		}
+
+	}
+	else if(p->__right_==nullptr){ // p에 왼쪽 서브트리만 있을 때
+		if(q->__left_==p){
+			q->__left_=p->__left_;
+			return p;
+		}
+		else{
+			q->__right_=p->__left_;
+			return p;
+		}
+	}
+	else{ // p에 왼쪽 오른쪽 서브트리가 있을 때 (degree가 2일 때)
+		_NodePtr r;
+		int flag; //0이면 왼쪽 1이면 오른쪽
 		unsigned h_left = __height(__root->__left_);
 		unsigned h_right = __height(__root->__right_);
-		if(h_left > h_right) return __erase_left_subtree(__root);
-		else if(h_left < h_right) return __erase_right_subtree(__root);
-		// 양쪽 h가 같은 경우
-		unsigned s_left = __size(__root->__left_);
-		unsigned s_right = __size(__root->__right_);
-		if(s_left >= s_right) return __erase_left_subtree(__root);
-		else if(s_left < s_right) return __erase_right_subtree(__root);
+		if(h_left > h_right) { r = __tree_max(p->__left_); flag = 0;}
+		else if (h_left < h_right) { r = __tree_min(p->__right_); flag = 1;}
+		else{
+			unsigned s_left = __size(__root->__left_);
+			unsigned s_right = __size(__root->__right_);
+			if(s_left >= s_right) {r = __tree_max(p->__left_); flag = 0;}
+			else if(s_left < s_right) {r = __tree_min(p->__right_); flag = 1;}
+		}
+		p->__key_=r->__key_;
+		if(flag) return __eraseBST(p->__right_, r->__key_);
+		else return __eraseBST(p->__left_, r->__key_);
 	}
-	else if (__root->__key_ > key){
-		if(__root->__left_ == nullptr) return nullptr;
-		return __eraseBST(__root->__left_, key);
-	}
-	else if (__root->__key_ < key){
-		if(__root->__right_ == nullptr) return nullptr;
-		return __eraseBST(__root->__right_, key);
-	}
+		
 	// write your own code here
 }
 
 // Dangling pointer를 방지하기 위해 __x를 참조 타입으로 받도록 설계하였습니다.
 template <class _NodePtr>
 void __clear(_NodePtr& __x) {
-	if(__x == nullptr) return;
+	if (__x == nullptr)return;
 	__clear(__x->__left_);
 	__clear(__x->__right_);
 	delete __x;
-	__x = nullptr;
-	return ;
 	// write your own code here
 }
 
@@ -247,12 +299,11 @@ class BST {
 		const_pointer erase(const key_type& key) {
 			// use __eraseBST or write your own code here
 			pointer __r = __eraseBST(__root_, key);
-			if (__r == nullptr) return nullptr;
-			if (__r == __root_) __root_ = nullptr;
+			if(__r==nullptr) return nullptr;
 			// Client still needs to destruct/deallocate it
 			// Or memory leak will occur
 			delete __r;
-			return __r;
+			return __r; 
 		}
 
 		void clear() {
@@ -264,6 +315,10 @@ class BST {
 	* 아래는 inorder traversal을 대체할 수 있는 operator<< 입니다.
 	* 반드시 아래의 함수를 사용해야할 필요는 없습니다.
 	*/
+	friend std::ostream& operator<<(std::ostream& os, const BST& tree) {
+		os << tree.__root_;
+		return os;
+	}
 };
 
 /*
@@ -283,20 +338,19 @@ int main(int argc, char **argv) {
 					std::cerr << "i " << key << ": The key already exists" << std::endl;
 					continue;
 				}
-				tree.inorder();
 				break;
 			case (int)'d':
 				if (tree.erase(key) == nullptr) {
 					std::cerr << "d " << key << ": The key does not exist" << std::endl;
 					continue;
 				}
-				tree.inorder();
 				break;
 			default:
 				std::cerr << "Invalid command: " << command << std::endl;
 				return (1);
 				break;
 		}
+		std::cout << tree << std::endl;
 	}
 
 	// 프로그램 종료 전, 메모리 누수가 발생하지 않도록 할당받은 메모리를 반드시 해제해야 합니다.
